@@ -3,7 +3,9 @@ package com.example.coronavirustrackingapp
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import androidx.annotation.ColorInt
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import com.example.coronavirustrackingapp.databinding.ActivityMainBinding
 import com.google.gson.GsonBuilder
 import retrofit2.Call
@@ -19,6 +21,7 @@ private const val BASE_URL = "https://covidtracking.com/api/v1/"
 //private const val BASE_URL = "https://api.covidindiatracker.com/api/"
 private const val TAG = "MainActivity"
 class MainActivity : AppCompatActivity() {
+    private lateinit var currentlyShownData: List<CovidData>
     private lateinit var adapter: CovidSparkAdapter
     private lateinit var perStateDailyData: Map<String, List<CovidData>>
     private lateinit var nationalDailyData: List<CovidData>
@@ -101,16 +104,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateDisplayMetric(metric: Metric) {
+        // Update the color of the chart
+        @ColorInt val colorInt = ContextCompat.getColor(this, R.color.design_default_color_primary_variant)
+        binding.sparkView.lineColor = colorInt
+        binding.tvMetricLabel.setTextColor(colorInt)
         // Update the metric on the adapter
         adapter.metric = metric
         adapter.notifyDataSetChanged()
 
         //Reset number and date shown in the bottom text views
-        //updateInfoForDate()
+        updateInfoForDate(currentlyShownData.last())
 
     }
 
     private fun updateDisplayWithData(dailyData: List<CovidData>) {
+        currentlyShownData = dailyData
         //Create a new SparkAdapter with the data
         adapter = CovidSparkAdapter(dailyData)
         binding.sparkView.adapter = adapter
