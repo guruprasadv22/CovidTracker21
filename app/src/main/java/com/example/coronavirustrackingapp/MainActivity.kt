@@ -20,6 +20,7 @@ import java.util.*
 private const val BASE_URL = "https://covidtracking.com/api/v1/"
 //private const val BASE_URL = "https://api.covidindiatracker.com/api/"
 private const val TAG = "MainActivity"
+private const val ALL_STATES = "All (Nationwide)"
 class MainActivity : AppCompatActivity() {
     private lateinit var currentlyShownData: List<CovidData>
     private lateinit var adapter: CovidSparkAdapter
@@ -72,9 +73,24 @@ class MainActivity : AppCompatActivity() {
                 }
                 perStateDailyData = statesData.reversed().groupBy { it.state }
                 Log.i(TAG, "Update spinner with state names")
-                //TODO: Update graph with state names
+                //Update graph with state names
+                updateSpinnerWithStateData(perStateDailyData.keys)
             }
         })
+    }
+
+    private fun updateSpinnerWithStateData(stateNames: Set<String>) {
+        val stateAbbreviationList = stateNames.toMutableList()
+        stateAbbreviationList.sort()
+        stateAbbreviationList.add(0, ALL_STATES)
+
+        // Add state list as data source for the spinner
+        binding.spinnerSelect.attachDataSource(stateAbbreviationList)
+        binding.spinnerSelect.setOnSpinnerItemSelectedListener { parent, _, position, _ ->
+            val selectedState = parent.getItemAtPosition(position) as String
+            val selectedData = perStateDailyData[selectedState] ?: nationalDailyData
+            updateDisplayWithData(selectedData)
+        }
     }
 
     private fun setupEventListeners() {
@@ -105,7 +121,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateDisplayMetric(metric: Metric) {
         // Update the color of the chart
-        @ColorInt val colorInt = ContextCompat.getColor(this, R.color.design_default_color_primary_variant)
+        val colorRes = when (metric) {
+            Metric.NEGATIVE -> R.color.colorNegative
+            Metric.POSITIVE -> R.color.colorPositive
+            Metric.DEATH -> R.color.colorDeath
+        }
+        @ColorInt val colorInt = ContextCompat.getColor(this, colorRes)
         binding.sparkView.lineColor = colorInt
         binding.tvMetricLabel.setTextColor(colorInt)
         // Update the metric on the adapter
@@ -126,7 +147,7 @@ class MainActivity : AppCompatActivity() {
         binding.radioButtonPositive.isChecked = true
         binding.radioButtonAll.isChecked = true
         //Display metric for the most recent data
-        updateInfoForDate(dailyData.last())
+        updateDisplayMetric(Metric.POSITIVE)
 
     }
 
