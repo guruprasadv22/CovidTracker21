@@ -26,7 +26,7 @@
 * The application will be developed for __Android OS__
 * We are going to use __Kotlin__ language for app development
 
-## Other tools used
+## Other libraries/tools used
 * __Retrofit__ : (https://github.com/square/retrofit)
 * __Spark from Robinhood__ : (https://github.com/robinhood/spark)
 * __Ticker from Robinhood__ : (https://github.com/robinhood/ticker)
